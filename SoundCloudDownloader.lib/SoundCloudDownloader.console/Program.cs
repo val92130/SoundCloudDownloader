@@ -12,16 +12,16 @@ namespace SoundCloudDownloader.console
     {
         static void Main(string[] args)
         {
-            Downloader d = new Downloader();
-            User user = Downloader.GetUser("valentinchatelain");
-            JArray data = Downloader.GetFavorites(user.Id);
+            Downloader d = new Downloader("https://soundcloud.com/aspenlawler/lethargic");
+            Downloader d1 = new Downloader("https://soundcloud.com/aspenlawler/lethargic");
+            Downloader d2 = new Downloader("https://soundcloud.com/djcarnageofficial/carnage-feat-timmy-trumpet-kshmr-toca-1");
+            Downloader d3 = new Downloader("https://soundcloud.com/aspenlawler/lethargic");
+            Downloader d4 = new Downloader("https://soundcloud.com/aspenlawler/lethargic");
 
-            foreach (JObject j in data)
-            {
-                Console.WriteLine(j["title"].ToString());
-            }
+            d2.StartDownload(@"C:\Users\val\Music\lelele.mp3");
 
             Console.ReadKey();
+
         }
     }
 }
