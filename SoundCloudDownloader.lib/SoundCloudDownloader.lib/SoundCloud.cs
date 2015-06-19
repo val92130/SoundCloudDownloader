@@ -22,10 +22,15 @@ namespace SoundCloudDownloader.lib
             return data;
         }
 
+        public static string GetTrackDownloadLink(string url)
+        {
+            JObject data = GetTrack(url);
+            return data["stream_url"].ToString() + "?client_id=" + ClientId;
+        }
+
         public static void DownloadTrack(string url, string path)
         {
             JObject data = GetTrack(url);
-
             WebClient.DownloadFile(data["stream_url"].ToString() + "?client_id=" + ClientId, path);
         }
 

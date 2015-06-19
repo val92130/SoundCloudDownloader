@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using SoundCloudDownloader.lib;
 using Newtonsoft.Json.Linq;
@@ -12,16 +13,23 @@ namespace SoundCloudDownloader.console
     {
         static void Main(string[] args)
         {
-            Downloader d = new Downloader("https://soundcloud.com/aspenlawler/lethargic");
-            Downloader d1 = new Downloader("https://soundcloud.com/aspenlawler/lethargic");
-            Downloader d2 = new Downloader("https://soundcloud.com/djcarnageofficial/carnage-feat-timmy-trumpet-kshmr-toca-1");
-            Downloader d3 = new Downloader("https://soundcloud.com/aspenlawler/lethargic");
-            Downloader d4 = new Downloader("https://soundcloud.com/aspenlawler/lethargic");
+            
+            Thread t = new Thread(() =>
+            {
+                SoundDownloader d = new SoundDownloader("https://soundcloud.com/pisextra/justice-stress");
+                d.OnCompleted += new SoundDownloader.OnCompletedEventHandler(OnCompleted);
+                d.StartDownload(@"C:\Users\val\Music\");
+            });
 
-            d2.StartDownload(@"C:\Users\val\Music\lelele.mp3");
+            t.Start();
 
             Console.ReadKey();
+        }
 
+        private static void OnCompleted(object sender)
+        {
+            SoundDownloader s = (SoundDownloader) sender;
+            Console.WriteLine("Download complete : " + s.Url);
         }
     }
 }

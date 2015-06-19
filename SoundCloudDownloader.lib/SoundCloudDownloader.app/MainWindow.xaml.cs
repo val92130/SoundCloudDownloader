@@ -13,7 +13,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Windows.Threading;
 using Microsoft.Win32;
 using SoundCloudDownloader.lib;
 
@@ -37,15 +36,7 @@ namespace SoundCloudDownloader.app
             if (saveFileDialog.ShowDialog() == true)
             {
                 string str = saveFileDialog.FileName;
-                //Downloader.DownloadTrack(urlTextBox.Text.ToString(), str);
-                Application.Current.Dispatcher.BeginInvoke(
-  DispatcherPriority.Background,
-  new Action(() =>
-  {
-      Downloader d = new Downloader(urlTextBox.Text.ToString());
-      d.StartDownload(str);
-  }));
-                
+                SoundCloud.DownloadTrack(urlTextBox.Text.ToString(), str);
             }
         }
     }
