@@ -29,19 +29,34 @@ namespace SoundCloudDownloader.lib
 
         public void Add(SoundDownloader Sound)
         {
-            _downloadQueue.Enqueue(Sound);
+            lock (_downloadQueue)
+            {
+                _downloadQueue.Enqueue(Sound);
+            }
+            
         }
 
         public void Get()
         {
-            _downloadQueue.Dequeue();
+            lock (_downloadQueue)
+            {
+                _downloadQueue.Dequeue();
+            }         
         }
 
         public void StartDownload()
         {
             if (_downloadQueue.Count != 0)
             {
-                SoundDownloader currentDl = _downloadQueue.Dequeue();
+                SoundDownloader currentDl;
+                lock (_downloadQueue)
+                {
+                    currentDl = _downloadQueue.Dequeue();
+                }
+
+                if (currentDl == null)
+                    return;
+                
                 Console.WriteLine("Downloading : " + currentDl.TrackTitle);
                 currentDl.OnCompleted += new SoundDownloader.OnCompletedEventHandler(DownloadComplete);
                 try

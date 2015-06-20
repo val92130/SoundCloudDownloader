@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -10,11 +11,14 @@ namespace SoundCloudDownloader.lib
 {
     public class SoundCloud
     {
-        private static string ClientId = "4dd97a35cf647de595b918944aa6915d";
+        public static string ClientId = "4dd97a35cf647de595b918944aa6915d";
         static WebClient WebClient = new WebClient();
 
         public static JObject GetTrack(string url)
         {
+            if (!Util.ValidTrackLink(url))
+                return null;
+
             JObject data =
                GetJson("http://api.soundcloud.com/resolve.json?url=" + url + "&client_id=" +
                        ClientId);
@@ -25,12 +29,21 @@ namespace SoundCloudDownloader.lib
         public static string GetTrackDownloadLink(string url)
         {
             JObject data = GetTrack(url);
+            if (data == null || data["stream_url"] == null)
+            {
+                Console.WriteLine("Error in GetTrackDownloadLink, link was invalid");
+                return String.Empty;
+            }
             return data["stream_url"].ToString() + "?client_id=" + ClientId;
         }
 
         public static void DownloadTrack(string url, string path)
         {
             JObject data = GetTrack(url);
+            if (data == null)
+            {
+                return;
+            }
             WebClient.DownloadFile(data["stream_url"].ToString() + "?client_id=" + ClientId, path);
         }
 
@@ -53,6 +66,13 @@ namespace SoundCloudDownloader.lib
         public static List<SoundDownloader> GetAllFavorites(string userName)
         {
             User user = GetUser(userName);
+
+            if (user == null)
+            {
+                Console.WriteLine("Wrong user, exception in GetAllFavorites");
+                return null;
+            }
+
             int favoritesCount = user.FavoritesCount;
             int span = (int)Math.Ceiling((double) favoritesCount/(double) 200);
             List<SoundDownloader> _soundList = new List<SoundDownloader>();
@@ -84,6 +104,11 @@ namespace SoundCloudDownloader.lib
             JObject data =
                 GetJson("http://api.soundcloud.com/resolve.json?url=http://soundcloud.com/" + userName + "&client_id=" +
                         ClientId);
+            if (data == null)
+            {
+                Console.WriteLine("Wrong username");
+                return null;
+            }
 
             User user = new User(int.Parse(data["id"].ToString()), data["kind"].ToString(), data["permalink"].ToString(), data["username"].ToString(),
                 data["uri"].ToString(), data["permalink_url"].ToString(), data["avatar_url"].ToString(), data["country"].ToString(), data["first_name"].ToString(),
@@ -95,14 +120,30 @@ namespace SoundCloudDownloader.lib
 
         public static JObject GetJson(string url)
         {
-            var data = WebClient.DownloadString(url);
-            return JObject.Parse(data);
+            try
+            {
+                var data = WebClient.DownloadString(url);
+                return JObject.Parse(data);
+            }
+            catch (Exception e)
+            {
+                Debug.Print(e.ToString());
+                return null;
+            }
         }
 
         public static JArray GetJsonArray(string url)
         {
-            var data = WebClient.DownloadString(url);
-            return JArray.Parse(data);
+            try
+            {
+                var data = WebClient.DownloadString(url);
+                return JArray.Parse(data);
+            }
+            catch (Exception e)
+            {
+                Debug.Print(e.ToString());
+                return null;
+            }
         }
     }
 }

@@ -75,16 +75,38 @@ namespace SoundCloudDownloader.lib
         {
             
             _webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(OnDownloadCompleted);
-            _webClient.DownloadFile(_downloadLink, folderPath + _trackTitle + ".mp3");
-            Completed();
+            try
+            {
+                _webClient.DownloadFile(_downloadLink, folderPath + _trackTitle + ".mp3");
+                
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            finally
+            {
+                Completed();
+            }
         }
 
         public void StartDownload(string filePath, bool customFileName)
         {
             string url = SoundCloud.GetTrackDownloadLink(_url);
             _webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(OnDownloadCompleted);
-            _webClient.DownloadFile(url, filePath);
-            Completed();
+            try
+            {
+                _webClient.DownloadFile(url, filePath);
+                
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            finally
+            {
+                Completed();
+            }
         }
 
         private void Completed()
