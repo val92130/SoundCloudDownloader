@@ -42,6 +42,43 @@ namespace SoundCloudDownloader.lib
             return data;
         }
 
+        public static JArray GetFavoritesOffset(int offset, int userId)
+        {
+            JArray data =
+                GetJsonArray("http://api.soundcloud.com/users/" + userId + "/favorites/?client_id=" + ClientId + "&offset="+offset+"&limit=200");
+
+            return data;
+        }
+
+        public static List<SoundDownloader> GetAllFavorites(string userName)
+        {
+            User user = GetUser(userName);
+            int favoritesCount = user.FavoritesCount;
+            int span = (int)Math.Ceiling((double) favoritesCount/(double) 200);
+            List<SoundDownloader> _soundList = new List<SoundDownloader>();
+
+            for (int i = 0; i < span; i++)
+            {
+                JArray data = GetFavoritesOffset(i*200, user.Id);
+                foreach (JObject j in data)
+                {
+                    if (j["stream_url"] == null )
+                    {
+                        if (j["id"] == null)
+                            continue;
+                        _soundList.Add(new SoundDownloader("https://api.soundcloud.com/tracks/" + j["id"].ToString() + "/stream" + "?client_id=" + ClientId, true,
+                            j["title"].ToString()));
+                    }
+                    else
+                    {
+                        _soundList.Add(new SoundDownloader(j["stream_url"].ToString() + "?client_id=" + ClientId, true, j["title"].ToString()));
+                    }
+                    
+                }
+            }
+            return _soundList;
+        }
+
         public static User GetUser(string userName)
         {
             JObject data =

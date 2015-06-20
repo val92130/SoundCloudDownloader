@@ -9,10 +9,22 @@ namespace SoundCloudDownloader.lib
     public class DownloadQueue
     {
         private Queue<SoundDownloader> _downloadQueue;
+        private string _folderPath;
 
-        public DownloadQueue()
+        public DownloadQueue(string folderPath)
         {
-            
+            _downloadQueue = new Queue<SoundDownloader>();
+            _folderPath = folderPath;
+        }
+
+        public DownloadQueue(string folderPath, List<SoundDownloader> downloadList)
+        {
+            _downloadQueue = new Queue<SoundDownloader>();
+            _folderPath = folderPath;
+            foreach (SoundDownloader s in downloadList)
+            {
+                _downloadQueue.Enqueue(s);
+            }
         }
 
         public void Add(SoundDownloader Sound)
@@ -29,8 +41,30 @@ namespace SoundCloudDownloader.lib
         {
             if (_downloadQueue.Count != 0)
             {
-                
+                SoundDownloader currentDl = _downloadQueue.Dequeue();
+                Console.WriteLine("Downloading : " + currentDl.TrackTitle);
+                currentDl.OnCompleted += new SoundDownloader.OnCompletedEventHandler(DownloadComplete);
+                try
+                {
+                    currentDl.StartDownload(_folderPath);
+                }
+                catch (Exception e)
+                {
+                    
+                    Console.WriteLine(e.ToString());
+                }
             }
+            else
+            {
+                Console.WriteLine("Queue finished");
+            }
+        }
+
+        private void DownloadComplete(object sender)
+        {
+            SoundDownloader s = (SoundDownloader) sender;
+            Console.WriteLine("Download completed : " + s.TrackTitle);
+            StartDownload();
         }
     }
 }

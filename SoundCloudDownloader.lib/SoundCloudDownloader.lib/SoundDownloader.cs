@@ -22,10 +22,37 @@ namespace SoundCloudDownloader.lib
         private bool _completed = false;
         public event OnCompletedEventHandler OnCompleted;
 
+        private string _trackTitle;
+        private string _downloadLink;
+
         public SoundDownloader(string downloadUrl)
         {
             _webClient = new WebClient();
             _url = downloadUrl;
+
+            _downloadLink = SoundCloud.GetTrackDownloadLink(_url);
+            string trackName = SoundCloud.GetTrack(_url)["title"].ToString();
+
+            foreach (char c in System.IO.Path.GetInvalidFileNameChars())
+            {
+                trackName = trackName.Replace(c, '_');
+            }
+            _trackTitle = trackName;
+
+        }
+
+        public SoundDownloader(string downloadUrl, bool IsDownLoadLink, string soundTitle)
+        {
+            _webClient = new WebClient();
+            _downloadLink = downloadUrl;
+            string trackName = soundTitle;
+
+            foreach (char c in System.IO.Path.GetInvalidFileNameChars())
+            {
+                trackName = trackName.Replace(c, '_');
+            }
+            _trackTitle = trackName;
+
         }
 
         public string Url
@@ -34,18 +61,21 @@ namespace SoundCloudDownloader.lib
             set { _url = value; }
         }
 
+        public string TrackTitle
+        {
+            get { return _trackTitle; }
+        }
+
+        public string DownloadLink
+        {
+            get { return _downloadLink; }
+        }
+
         public void StartDownload(string folderPath)
         {
-            string url = SoundCloud.GetTrackDownloadLink(_url);
-            string trackName = SoundCloud.GetTrack(_url)["title"].ToString();
-
-            foreach (char c in System.IO.Path.GetInvalidFileNameChars())
-            {
-                trackName = trackName.Replace(c, '_');
-            }
-
+            
             _webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(OnDownloadCompleted);
-            _webClient.DownloadFile(url, folderPath + trackName + ".mp3");
+            _webClient.DownloadFile(_downloadLink, folderPath + _trackTitle + ".mp3");
             Completed();
         }
 
@@ -63,7 +93,6 @@ namespace SoundCloudDownloader.lib
             {
                 OnCompleted(this);
                 _completed = true;
-                Console.WriteLine("Completed ! ");
             }
         }
 

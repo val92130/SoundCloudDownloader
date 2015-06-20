@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -14,15 +15,20 @@ namespace SoundCloudDownloader.console
         static void Main(string[] args)
         {
             
-            Thread t = new Thread(() =>
-            {
-                SoundDownloader d = new SoundDownloader("https://soundcloud.com/pisextra/justice-stress");
-                d.OnCompleted += new SoundDownloader.OnCompletedEventHandler(OnCompleted);
-                d.StartDownload(@"C:\Users\val\Music\");
-            });
+            Console.WriteLine("Enter your soundcloud username");
+            string user = Console.ReadLine();
+            Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic) +
+                                      @"\soundcloudDonwloads\");
 
-            t.Start();
+            string dir = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic) +
+                         @"\soundcloudDonwloads\";
+            Console.WriteLine("Songs will be saved at  : " + dir);
 
+            List<SoundDownloader> _favorites = SoundCloud.GetAllFavorites(user);
+            //Console.WriteLine(SoundCloud.GetFavoritesOffset(0,6128633).Count);
+
+            DownloadQueue _queue = new DownloadQueue(dir, _favorites);
+            _queue.StartDownload();
             Console.ReadKey();
         }
 
