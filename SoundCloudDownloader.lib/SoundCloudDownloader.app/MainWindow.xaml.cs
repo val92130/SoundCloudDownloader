@@ -30,14 +30,23 @@ namespace SoundCloudDownloader.app
 
         private void downloadTrackButton_Click(object sender, RoutedEventArgs e)
         {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "Mp3 file (*.mp3)|*.mp3";
-            saveFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
-            if (saveFileDialog.ShowDialog() == true)
+            if (Util.ValidUser(urlTextBox.Text.ToString()))
             {
-                string str = saveFileDialog.FileName;
-                SoundCloud.DownloadTrack(urlTextBox.Text.ToString(), str);
+                SaveFileDialog saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Filter = "Mp3 file (*.mp3)|*.mp3";
+                saveFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    string str = saveFileDialog.FileName;
+                    List<SoundDownloader> favorites = SoundCloud.GetAllFavorites(urlTextBox.Text.ToString());
+                    //SoundCloud.DownloadTrack(urlTextBox.Text.ToString(), str);
+                }
             }
+            else
+            {
+                MessageBox.Show("Invalid username");
+            }
+
         }
     }
 }

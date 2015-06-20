@@ -32,57 +32,65 @@ namespace SoundCloudDownloader.console
             List<SoundDownloader> favorites = SoundCloud.GetAllFavorites(user);
             Console.WriteLine("Favorites fetching done : "+ favorites.Count + " tracks found");
 
-            List<SoundDownloader>[] _soundDownloaders = new List<SoundDownloader>[]
-            {
-                new List<SoundDownloader>(),
-                new List<SoundDownloader>(),
-                new List<SoundDownloader>(),
-                new List<SoundDownloader>()
-            };
 
-            int listCount = favorites.Count/4;
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = listCount*i; j < listCount*i + listCount; j++)
+            Console.WriteLine("Choose the number of threads (max 8)");
+  
+            bool valid = false;
+            int a;
+            do
+            {            
+                if (int.TryParse(Console.ReadLine(), out a))
                 {
-                    _soundDownloaders[i].Add(favorites[j]);
+                    valid = true;
+                }
+                else
+                {
+                    Console.WriteLine("Enter a valid number");
+                }
+
+            } while (!valid);
+
+            StartThreads(a <= 8 && a > 0 ? a : 4, favorites, dir );
+
+            Console.ReadKey();
+        }
+
+        private static void StartThreads(int threadsNbr, List<SoundDownloader> soundList, string folderPath )
+        {
+            List<SoundDownloader>[] soundDownloaders = new List<SoundDownloader>[threadsNbr];
+
+            for (int i = 0; i < soundDownloaders.Length; i++)
+            {
+                soundDownloaders[i] = new List<SoundDownloader>();
+            }
+
+            int nbr = threadsNbr;
+            int listCount = soundList.Count / soundDownloaders.Length;
+            for (int i = 0; i < soundDownloaders.Length; i++)
+            {
+                for (int j = listCount * i; j < listCount * i + listCount; j++)
+                {
+                    soundDownloaders[i].Add(soundList[j]);
                 }
             }
 
-            DownloadQueue q1, q2, q3, q4;
+            List<Thread> threads = new List<Thread>();
 
-            Thread t1 = new Thread(() =>
+            for (int i = 0; i < soundDownloaders.Length; i++)
             {
-                q1 = new DownloadQueue(dir,_soundDownloaders[0]);
-                q1.StartDownload();
-            });
-            Thread t2 = new Thread(() =>
+                var i1 = i;
+                Thread t = new Thread(() =>
+                {
+                    DownloadQueue queue = new DownloadQueue(folderPath, soundDownloaders[i1]);
+                    queue.StartDownload();
+                });
+                threads.Add(t);
+            }
+
+            foreach (Thread t in threads)
             {
-                q2 = new DownloadQueue(dir, _soundDownloaders[1]);
-                q2.StartDownload();
-            });
-            Thread t3 = new Thread(() =>
-            {
-                q3 = new DownloadQueue(dir, _soundDownloaders[2]);
-                q3.StartDownload();
-            });
-            Thread t4 = new Thread(() =>
-            {
-                q4 = new DownloadQueue(dir, _soundDownloaders[3]);
-                q4.StartDownload();
-            });
-
-            t1.Start();
-            t2.Start();
-            t3.Start();
-            t4.Start();
-
-
-            //DownloadQueue queue = new DownloadQueue(dir, favorites);
-
-            //queue.StartDownload();
-
-            Console.ReadKey();
+                t.Start();
+            }
         }
 
         private static void OnCompleted(object sender)
