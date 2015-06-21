@@ -24,6 +24,7 @@ namespace SoundCloudDownloader.lib
 
         private string _trackTitle;
         private string _downloadLink;
+        private TrackInformation _trackInfo;
 
         public SoundDownloader(string downloadUrl)
         {
@@ -41,11 +42,12 @@ namespace SoundCloudDownloader.lib
 
         }
 
-        public SoundDownloader(string downloadUrl, bool IsDownLoadLink, string soundTitle)
+        public SoundDownloader(string downloadUrl, bool IsDownLoadLink, TrackInformation trackInfo)
         {
             _webClient = new WebClient();
             _downloadLink = downloadUrl;
-            string trackName = soundTitle;
+            _trackInfo = trackInfo;
+            string trackName = trackInfo.Title;
 
             foreach (char c in System.IO.Path.GetInvalidFileNameChars())
             {
@@ -53,6 +55,14 @@ namespace SoundCloudDownloader.lib
             }
             _trackTitle = trackName;
 
+        }
+
+        public TrackInformation TrackInformation
+        {
+            get
+            {
+                return _trackInfo;
+            }
         }
 
         public string Url
@@ -86,7 +96,10 @@ namespace SoundCloudDownloader.lib
             }
             finally
             {
+                _trackInfo.Downloaded = true;
+                _completed = true;
                 Completed();
+                
             }
         }
 
@@ -106,6 +119,8 @@ namespace SoundCloudDownloader.lib
             finally
             {
                 Completed();
+                _trackInfo.Downloaded = true;
+                _completed = true;
             }
         }
 
@@ -114,7 +129,7 @@ namespace SoundCloudDownloader.lib
             if (OnCompleted != null)
             {
                 OnCompleted(this);
-                _completed = true;
+                
             }
         }
 
