@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace SoundCloudDownloader.lib
 {
+    [Serializable]
     public class TrackInformation
     {
         private bool _downloaded;

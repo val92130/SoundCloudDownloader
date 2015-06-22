@@ -18,6 +18,7 @@ using Microsoft.Win32;
 using SoundCloudDownloader.lib;
 using DataGrid = System.Windows.Controls.DataGrid;
 using MessageBox = System.Windows.MessageBox;
+using System.Windows.Controls;
 
 namespace SoundCloudDownloader.app
 {
@@ -26,24 +27,59 @@ namespace SoundCloudDownloader.app
     /// </summary>
     public partial class MainWindow : Window
     {
+        private DataSaver _dataSaver;
         private List<SoundDownloader> _favoritesList;
-        private List<TrackInformation> _tracksInfo; 
+        private List<TrackInformation> _tracksInfo;
+        private string _selectedPath = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
+        private bool _paused = false;
+        private DownloadQueue queue;
+
+        private Thread _downloadThread;
         public MainWindow()
         {
+            _dataSaver = new DataSaver();
             InitializeComponent();
         }
 
-        private void downloadTrackButton_Click(object sender, RoutedEventArgs e)
+        private void fetchFavoritesButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Util.ValidUser(urlTextBox.Text.ToString()))
+            if (Util.ValidUser(urlTextBox.Text))
             {
+                User u = SoundCloud.GetUser(urlTextBox.Text);
+
+                BitmapImage avatar = new BitmapImage();
+                avatar.BeginInit();
+                avatar.UriSource = new Uri(u.AvatarUrl);
+                avatar.CacheOption = BitmapCacheOption.OnLoad;
+                avatar.EndInit();
+                avatarImage.Source = avatar;
+
                 _favoritesList = SoundCloud.GetAllFavorites(urlTextBox.Text.ToString());
+
+                var songs = _dataSaver.Load();
+                if (songs != null)
+                {
+                    for (int i = 0; i < _favoritesList.Count; i++)
+                    {
+                        for (int j = 0; j < songs.Count; j++)
+                        {
+                            if (songs[j].Title == _favoritesList[i].TrackInformation.Title)
+                            {
+                                _favoritesList[i].IsCompleted = true;
+                                _favoritesList[i].TrackInformation.Downloaded = true;
+                                //_favoritesList.Remove(_favoritesList[i]);
+                            }
+                        }
+
+                    }
+                }
+
+
                 if (songsGrid.IsLoaded)
                 {
                     _tracksInfo = GetTrackInformations(_favoritesList);
                     songsGrid.ItemsSource = _tracksInfo;
                 }
-                //SoundCloud.DownloadTrack(urlTextBox.Text.ToString(), str);
             }
             else
             {
@@ -52,15 +88,8 @@ namespace SoundCloudDownloader.app
 
         }
 
-//  SaveFileDialog saveFileDialog = new SaveFileDialog();
-//                saveFileDialog.Filter = "Mp3 file (*.mp3)|*.mp3";
-//                saveFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
-//                if (saveFileDialog.ShowDialog() == true)
-//{
 
-//}
-
-    private List<TrackInformation> GetTrackInformations(List<SoundDownloader> soundList)
+        private List<TrackInformation> GetTrackInformations(List<SoundDownloader> soundList)
         {
             List<TrackInformation> trackList = new List<TrackInformation>();
 
@@ -71,24 +100,25 @@ namespace SoundCloudDownloader.app
             }
 
             return trackList;
+        }
+
+        private void OnCompletedDownload(object sender)
+        {
+            SoundDownloader sound = sender as SoundDownloader;
+            
+            this.Dispatcher.Invoke(() =>
+            {
+                songsGrid.Items.Refresh();
+                songsGrid.ItemsSource = _tracksInfo;
+                _dataSaver.SaveTrack(sound.TrackInformation);
+            });
+
 
         }
 
-    private void OnCompletedDownload(object sender)
-    {
-        SoundDownloader sound = sender as SoundDownloader;
-        this.Dispatcher.Invoke(() =>
-        {
-            songsGrid.Items.Refresh();
-            songsGrid.ItemsSource = _tracksInfo;
-        });
-
-
-    }
-
         private void songsGrid_Loaded(object sender, RoutedEventArgs e)
         {
-            var items = new List<TrackInformation>();            
+            var items = new List<TrackInformation>();
 
             var grid = sender as DataGrid;
             grid.ItemsSource = items;
@@ -96,21 +126,81 @@ namespace SoundCloudDownloader.app
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            System.Windows.Forms.FolderBrowserDialog saveFileDialog = new System.Windows.Forms.FolderBrowserDialog();
-            //saveFileDialog.Filter = "Mp3 file (*.mp3)|*.mp3";
-            saveFileDialog.RootFolder = Environment.SpecialFolder.MyMusic;
+
+            if (!_paused)
+            {
+                downloadButton.Content = "Pause";
+                _paused = true;
+                if (queue != null)
+                {
+                    if (queue.IsPaused)
+                    {
+                        if (_downloadThread == null)
+                        {
+                            _downloadThread = new Thread(() =>
+                            {
+                                queue.Resume();
+                            });
+                            _downloadThread.Start();
+                        }
+                        else
+                        {
+                            _downloadThread.Abort();
+                            _downloadThread = new Thread(() =>
+                            {
+                                queue.Resume();
+                            });
+                            _downloadThread.Start();
+                        }
+                        
+
+                    }
+                }
+                if (_downloadThread == null)
+                {
+                    _downloadThread = new Thread(() =>
+                    {
+                        queue = new DownloadQueue(_selectedPath, _favoritesList);
+                        queue.StartDownload();
+                    });
+                    _downloadThread.Start();
+                }
+                else
+                {
+                    _downloadThread.Abort();
+                    _downloadThread = new Thread(() =>
+                    {
+                        queue = new DownloadQueue(_selectedPath, _favoritesList);
+                        queue.StartDownload();
+                    });
+                    _downloadThread.Start();
+                }
+                
+            }
+            else
+            {
+                if (queue != null)
+                {
+                    queue.Pause();
+                }
+                downloadButton.Content = "Download all";
+                _paused = false;
+            }
+            
+        }
+
+        private void SelectDirectoryClick(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Forms.FolderBrowserDialog saveFileDialog = new System.Windows.Forms.FolderBrowserDialog
+            {
+                RootFolder = Environment.SpecialFolder.MyMusic
+            };
             DialogResult d = saveFileDialog.ShowDialog();
 
             if (d == System.Windows.Forms.DialogResult.OK)
             {
-                Thread t = new Thread(() =>
-                {
-                    DownloadQueue queue = new DownloadQueue(saveFileDialog.SelectedPath, _favoritesList);
-                    queue.StartDownload();
-                });
-                t.Start();
+                _selectedPath = saveFileDialog.SelectedPath;
             }
-
         }
     }
 }

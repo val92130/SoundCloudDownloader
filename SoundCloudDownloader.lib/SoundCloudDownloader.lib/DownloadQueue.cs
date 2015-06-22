@@ -6,10 +6,13 @@ using System.Threading.Tasks;
 
 namespace SoundCloudDownloader.lib
 {
+    [Serializable]
     public class DownloadQueue
     {
         private Queue<SoundDownloader> _downloadQueue;
         private string _folderPath;
+        private bool _finished = false;
+        private bool _paused = false;
 
         public DownloadQueue(string folderPath)
         {
@@ -25,6 +28,25 @@ namespace SoundCloudDownloader.lib
             {
                 _downloadQueue.Enqueue(s);
             }
+        }
+
+        public void Pause()
+        {
+            _paused = true;
+        }
+
+        public void Resume()
+        {
+            if (_paused)
+            {
+                _paused = false;
+                StartDownload();
+            }
+        }
+
+        public bool Finished
+        {
+            get { return _finished; }
         }
 
         public void Add(SoundDownloader Sound)
@@ -44,10 +66,25 @@ namespace SoundCloudDownloader.lib
             }         
         }
 
+        public bool IsPaused
+        {
+            get
+            {
+                return _paused;
+            }
+        }
+
         public void StartDownload()
         {
             if (_downloadQueue.Count != 0)
             {
+                _finished = false;
+
+                if (_paused)
+                {
+                    return;
+                }
+
                 SoundDownloader currentDl;
                 lock (_downloadQueue)
                 {
@@ -56,7 +93,13 @@ namespace SoundCloudDownloader.lib
 
                 if (currentDl == null)
                     return;
-                
+
+                if (currentDl.IsCompleted)
+                {
+                    StartDownload();
+                    return;
+                }
+                     
                 Console.WriteLine("Downloading : " + currentDl.TrackTitle);
                 currentDl.OnCompleted += new SoundDownloader.OnCompletedEventHandler(DownloadComplete);
                 try
@@ -71,6 +114,7 @@ namespace SoundCloudDownloader.lib
             }
             else
             {
+                _finished = true;
                 Console.WriteLine("Queue finished");
             }
         }
@@ -79,7 +123,11 @@ namespace SoundCloudDownloader.lib
         {
             SoundDownloader s = (SoundDownloader) sender;
             Console.WriteLine("Download completed : " + s.TrackTitle);
-            StartDownload();
+            if (_downloadQueue.Count != 0)
+            {
+                StartDownload();
+            }
+            
         }
     }
 }

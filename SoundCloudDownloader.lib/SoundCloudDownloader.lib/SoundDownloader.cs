@@ -12,14 +12,17 @@ using System.Threading;
 
 namespace SoundCloudDownloader.lib
 {
+    [Serializable]
     public class SoundDownloader
     {
+        [NonSerialized]
         private WebClient _webClient;
+        [NonSerialized]
         private AutoResetEvent _waiter;
         private string _url;
         public delegate void OnCompletedEventHandler(object sender);
 
-        private bool _completed = false;
+        private bool _completed = false;    
         public event OnCompletedEventHandler OnCompleted;
 
         private string _trackTitle;
@@ -81,13 +84,19 @@ namespace SoundCloudDownloader.lib
             get { return _downloadLink; }
         }
 
+        public bool IsCompleted
+        {
+            get { return _completed; }
+            set { _completed = value; }
+        }
+
         public void StartDownload(string folderPath)
         {
             
             _webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(OnDownloadCompleted);
             try
             {
-                _webClient.DownloadFile(_downloadLink, folderPath + _trackTitle + ".mp3");
+                _webClient.DownloadFile(_downloadLink, folderPath + @"\" + _trackTitle + ".mp3");
                 
             }
             catch (Exception e)
@@ -103,26 +112,6 @@ namespace SoundCloudDownloader.lib
             }
         }
 
-        public void StartDownload(string filePath, bool customFileName)
-        {
-            string url = SoundCloud.GetTrackDownloadLink(_url);
-            _webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(OnDownloadCompleted);
-            try
-            {
-                _webClient.DownloadFile(url, filePath);
-                
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-            finally
-            {
-                Completed();
-                _trackInfo.Downloaded = true;
-                _completed = true;
-            }
-        }
 
         private void Completed()
         {
