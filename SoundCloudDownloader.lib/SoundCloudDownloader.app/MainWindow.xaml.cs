@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -189,6 +190,11 @@ namespace SoundCloudDownloader.app
             
         }
 
+        public string SelectedPath
+        {
+            get { return _selectedPath; }
+        }
+
         private void SelectDirectoryClick(object sender, RoutedEventArgs e)
         {
             System.Windows.Forms.FolderBrowserDialog saveFileDialog = new System.Windows.Forms.FolderBrowserDialog
@@ -201,6 +207,28 @@ namespace SoundCloudDownloader.app
             {
                 _selectedPath = saveFileDialog.SelectedPath;
             }
+        }
+
+        private void DownloadSingleTrackClick(object sender, RoutedEventArgs e)
+        {
+            string s = Microsoft.VisualBasic.Interaction.InputBox("Put a soundcloud track link \nIt will be saved in : " + _selectedPath,
+                                           "Download single track",
+                                           "",
+                                           -1, -1);
+
+            string song = s;
+            if (Util.ValidTrackLink(s))
+            {
+                SoundCloud.DownloadTrack(s, _selectedPath);
+                MessageBox.Show("Done !");
+            }
+            Debug.Print(s);
+        }
+
+        private void DownloadMultipleTracksClick(object sender, RoutedEventArgs e)
+        {
+            MultipleTrackDownloaderWindow m = new MultipleTrackDownloaderWindow(this);
+            m.ShowDialog();
         }
     }
 }

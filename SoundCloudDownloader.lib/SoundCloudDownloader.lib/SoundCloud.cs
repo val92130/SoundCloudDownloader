@@ -37,14 +37,14 @@ namespace SoundCloudDownloader.lib
             return data["stream_url"].ToString() + "?client_id=" + ClientId;
         }
 
-        public static void DownloadTrack(string url, string path)
+        public static void DownloadTrack(string url, string folderPath)
         {
             JObject data = GetTrack(url);
             if (data == null)
             {
                 return;
             }
-            WebClient.DownloadFile(data["stream_url"].ToString() + "?client_id=" + ClientId, path);
+            WebClient.DownloadFile(data["stream_url"].ToString() + "?client_id=" + ClientId, folderPath + @"\" + Util.ValidateString(data["title"].ToString()) + ".mp3");
         }
 
         public static JArray GetFavorites(int userId)

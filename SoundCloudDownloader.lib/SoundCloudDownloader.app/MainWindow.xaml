@@ -5,7 +5,6 @@
 
     <Grid>
 
-
         <Grid.Background>
             <ImageBrush ImageSource="background.png"/>
         </Grid.Background>
@@ -13,19 +12,21 @@
 
 
         <Rectangle Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="65" VerticalAlignment="Top" Width="794" Opacity="0.7" IsHitTestVisible="True" Margin="0,10,0,0"/>
-        <TextBox x:Name="urlTextBox" Height="20" Margin="0,24,0,527" TextWrapping="Wrap" Text="Soundcloud profile name" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.7" RenderTransformOrigin="0.496,-0.13" UndoLimit="100000"/>
-        <Button x:Name="downloadTrackButton" Content="Fetch" HorizontalAlignment="Stretch" Margin="327,49,327,0" VerticalAlignment="Top" Opacity="0.8" Click="fetchFavoritesButton_Click"/>
+        <TextBox x:Name="urlTextBox" Margin="10,34,570,506" TextWrapping="Wrap" Text="Soundcloud profile name" HorizontalAlignment="Stretch" Opacity="0.7" RenderTransformOrigin="0.496,-0.13" UndoLimit="100000"/>
+        <Button x:Name="downloadTrackButton" Content="Fetch" HorizontalAlignment="Stretch" Margin="249,34,405,0" VerticalAlignment="Top" Opacity="0.8" Click="fetchFavoritesButton_Click"/>
         <DataGrid x:Name="songsGrid" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" AlternatingRowBackground="CornflowerBlue" Margin="10,122,10,0" VerticalAlignment="Top" Height="427" ColumnWidth="*" Loaded="songsGrid_Loaded" Opacity="0.8" FontFamily="Segoe WP"/>
-        <Button x:Name="downloadButton" Content="Download all" HorizontalAlignment="Center" Margin="0,88,0,0" VerticalAlignment="Top" Width="101" RenderTransformOrigin="0.5,0.5" Click="Button_Click"/>
+        <Button x:Name="downloadButton" Content="Download all" HorizontalAlignment="Stretch" Margin="416,34,234,0" VerticalAlignment="Top" RenderTransformOrigin="0.5,0.5" Click="Button_Click"/>
         <DockPanel>
             <Menu DockPanel.Dock="Top">
                 <MenuItem Header="_Settings" >
                     <MenuItem Header="_Download Directory" Click="SelectDirectoryClick"/>
+                    <MenuItem Header="_Download single track" Click="DownloadSingleTrackClick"/>
+                    <MenuItem Header="_Download multiple tracks" Click="DownloadMultipleTracksClick"/>
                 </MenuItem>
             </Menu>
             <StackPanel></StackPanel>
         </DockPanel>
-        <Image x:Name="avatarImage" HorizontalAlignment="Left" Height="57" Margin="549,18,0,0" VerticalAlignment="Top" Width="81"/>
+        <Image x:Name="avatarImage" HorizontalAlignment="Left" Height="53" Margin="565,22,0,0" VerticalAlignment="Top" Width="81"/>
 
     </Grid>
 
