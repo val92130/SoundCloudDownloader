@@ -211,7 +211,19 @@ namespace SoundCloudDownloader.app
 
         private void DownloadSingleTrackClick(object sender, RoutedEventArgs e)
         {
-            string s = Microsoft.VisualBasic.Interaction.InputBox("Put a soundcloud track link \nIt will be saved in : " + _selectedPath,
+            System.Windows.Forms.FolderBrowserDialog saveFileDialog = new System.Windows.Forms.FolderBrowserDialog
+            {
+                RootFolder = Environment.SpecialFolder.MyMusic
+            };
+            DialogResult d = saveFileDialog.ShowDialog();
+
+            var path ="";
+            if (d == System.Windows.Forms.DialogResult.OK)
+            {
+                path = saveFileDialog.SelectedPath;
+            }
+
+            string s = Microsoft.VisualBasic.Interaction.InputBox("Put a soundcloud track link \nIt will be saved in : " + path,
                                            "Download single track",
                                            "",
                                            -1, -1);
@@ -219,7 +231,7 @@ namespace SoundCloudDownloader.app
             string song = s;
             if (Util.ValidTrackLink(s))
             {
-                SoundCloud.DownloadTrack(s, _selectedPath);
+                SoundCloud.DownloadTrack(s, path);
                 MessageBox.Show("Done !");
             }
             Debug.Print(s);
@@ -229,6 +241,42 @@ namespace SoundCloudDownloader.app
         {
             MultipleTrackDownloaderWindow m = new MultipleTrackDownloaderWindow(this);
             m.ShowDialog();
+        }
+
+        private void DownloadArtistTracksClick(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Forms.FolderBrowserDialog saveFileDialog = new System.Windows.Forms.FolderBrowserDialog
+            {
+                RootFolder = Environment.SpecialFolder.MyMusic
+            };
+            DialogResult d = saveFileDialog.ShowDialog();
+
+            var path = "";
+            if (d == System.Windows.Forms.DialogResult.OK)
+            {
+                path = saveFileDialog.SelectedPath;
+            }
+
+            string user = Microsoft.VisualBasic.Interaction.InputBox("Put a soundcloud username \nIt will be saved in : " + path,
+                                           "Download single track",
+                                           "",
+                                           -1, -1);
+
+            if (Util.ValidUser(user))
+            {
+                var sounds = SoundCloud.GetUserTracks(user);
+
+                DownloadQueue queue = new DownloadQueue(path, sounds);
+                Thread t = new Thread(() =>
+                {
+                    queue.StartDownload();
+                    MessageBox.Show("Finished !");
+                });
+                t.Start();
+                MessageBox.Show("Download started ! \n" +
+                                "Found " + sounds.Count + " tracks from the artist : " + user);
+            }
+            Debug.Print(user);
         }
     }
 }
