@@ -119,33 +119,7 @@ namespace SoundCloudDownloader.lib
             return sounds;
         }
 
-
-            foreach (JObject j in data)
-            {
-                TrackInformation trackInfo = null;
-                if (j["user"]["username"] != null && j["title"] != null && j["duration"] != null)
-                {
-                    double duration = Math.Round(double.Parse(j["duration"].ToString()) / 1000 / 60, 2);
-                    trackInfo = new TrackInformation(j["user"]["username"].ToString(), j["title"].ToString(), duration);
-                }
-
-                if (j["stream_url"] == null)
-                {
-                    if (j["id"] == null)
-                        continue;
-
-
-                    sounds.Add(new SoundDownloader("https://api.soundcloud.com/tracks/" + j["id"].ToString() + "/stream" + "?client_id=" + ClientId, true,
-                        trackInfo));
-                }
-                else
-                {
-                    sounds.Add(new SoundDownloader(j["stream_url"].ToString() + "?client_id=" + ClientId, true, trackInfo));
-                }
-
-            }
-            return sounds;
-        }
+   
 
         public static JArray GetFavoritesOffset(int offset, int userId)
         {

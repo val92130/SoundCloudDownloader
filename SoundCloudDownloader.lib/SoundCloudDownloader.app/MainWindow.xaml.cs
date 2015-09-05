@@ -108,7 +108,7 @@ namespace SoundCloudDownloader.app
         private void OnCompletedDownload(object sender)
         {
             SoundDownloader sound = sender as SoundDownloader;
-            
+
             this.Dispatcher.Invoke(() =>
             {
                 songsGrid.Items.Refresh();
@@ -155,7 +155,7 @@ namespace SoundCloudDownloader.app
                             });
                             _downloadThread.Start();
                         }
-                        
+
 
                     }
                 }
@@ -178,7 +178,7 @@ namespace SoundCloudDownloader.app
                     });
                     _downloadThread.Start();
                 }
-                
+
             }
             else
             {
@@ -189,7 +189,7 @@ namespace SoundCloudDownloader.app
                 downloadButton.Content = "Download all";
                 _paused = false;
             }
-            
+
         }
 
         public string SelectedPath
@@ -201,7 +201,7 @@ namespace SoundCloudDownloader.app
         {
             System.Windows.Forms.FolderBrowserDialog saveFileDialog = new System.Windows.Forms.FolderBrowserDialog
             {
-                
+
             };
             DialogResult d = saveFileDialog.ShowDialog();
 
@@ -219,7 +219,7 @@ namespace SoundCloudDownloader.app
             };
             DialogResult d = saveFileDialog.ShowDialog();
 
-            var path ="";
+            var path = "";
             if (d == System.Windows.Forms.DialogResult.OK)
             {
                 path = saveFileDialog.SelectedPath;
@@ -246,6 +246,55 @@ namespace SoundCloudDownloader.app
         }
 
         private void DownloadPlaylistTracksClick(object sender, RoutedEventArgs e)
+        {
+
+            System.Windows.Forms.FolderBrowserDialog saveFileDialog = new System.Windows.Forms.FolderBrowserDialog
+            {
+                RootFolder = Environment.SpecialFolder.MyMusic
+            };
+            DialogResult d = saveFileDialog.ShowDialog();
+
+            var path = "";
+            if (d == System.Windows.Forms.DialogResult.OK)
+            {
+                path = saveFileDialog.SelectedPath;
+            }
+
+            string playlist = Microsoft.VisualBasic.Interaction.InputBox("Put a soundcloud playlist url \nIt will be saved in : " + path,
+                                           "Download playlist",
+                                           "",
+                                           -1, -1);
+            JArray tracks = SoundCloud.GetPlaylist(playlist);
+            if (tracks == null)
+            {
+                MessageBox.Show("Error, incorrect url");
+                return;
+            }
+
+            List<SoundDownloader> soundList = SoundCloud.GetDownloadList(tracks);
+            SoundDownloader lastElem = soundList[soundList.Count - 1];
+            
+
+            SoundDownloader.OnCompletedEventHandler handler = (obj) =>
+            {
+                MessageBox.Show("Done ! ");
+            };
+            lastElem.OnCompleted += handler;
+
+            MessageBox.Show("Download starting");
+            Thread thread = new Thread(() =>
+            {
+                foreach (SoundDownloader s in soundList)
+                {
+                    s.StartDownload(path);
+                }
+            });
+            thread.Start();
+        }
+
+
+
+        private void DownloadArtistTracksClick(object sender, RoutedEventArgs e)
         {
             System.Windows.Forms.FolderBrowserDialog saveFileDialog = new System.Windows.Forms.FolderBrowserDialog
             {
