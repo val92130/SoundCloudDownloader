@@ -245,7 +245,13 @@ namespace SoundCloudDownloader.app
             m.ShowDialog();
         }
 
+<<<<<<< HEAD
         private void DownloadPlaylistTracksClick(object sender, RoutedEventArgs e)
+        {
+            PlaylistDownloaderWindow p = new PlaylistDownloaderWindow(this);
+            p.ShowDialog();
+=======
+        private void DownloadArtistTracksClick(object sender, RoutedEventArgs e)
         {
             System.Windows.Forms.FolderBrowserDialog saveFileDialog = new System.Windows.Forms.FolderBrowserDialog
             {
@@ -279,6 +285,7 @@ namespace SoundCloudDownloader.app
                                 "Found " + sounds.Count + " tracks from the artist : " + user);
             }
             Debug.Print(user);
+>>>>>>> a32129c61dd0cb79a9ad4510486d400cfae0ce4f
         }
     }
 }

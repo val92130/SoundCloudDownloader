@@ -22,8 +22,11 @@
                     <MenuItem Header="_Change Download Directory" Click="SelectDirectoryClick"/>
                     <MenuItem Header="_Download single track" Click="DownloadSingleTrackClick"/>
                     <MenuItem Header="_Download multiple tracks" Click="DownloadMultipleTracksClick"/>
+<<<<<<< HEAD
                     <MenuItem Header="_Download playlist tracks" Click="DownloadPlaylistTracksClick"/>
+=======
                     <MenuItem Header="_Download artist tracks" Click="DownloadArtistTracksClick"/>
+>>>>>>> a32129c61dd0cb79a9ad4510486d400cfae0ce4f
                 </MenuItem>
             </Menu>
             <StackPanel></StackPanel>
