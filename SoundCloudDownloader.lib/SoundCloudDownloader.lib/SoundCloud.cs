@@ -44,7 +44,23 @@ namespace SoundCloudDownloader.lib
             {
                 return;
             }
-            WebClient.DownloadFile(data["stream_url"].ToString() + "?client_id=" + ClientId, folderPath + @"\" + Util.ValidateString(data["title"].ToString()) + ".mp3");
+
+            try
+            {
+                if (data["stream_url"] == null)
+                {
+                    if (data["id"] == null)
+                        return;
+
+                    WebClient.DownloadFile("https://api.soundcloud.com/tracks/" + data["id"].ToString() + "/stream" + "?client_id=" + ClientId, folderPath + @"\" + Util.ValidateString(data["title"].ToString()) + ".mp3");
+                    return;
+                }
+                WebClient.DownloadFile(data["stream_url"].ToString() + "?client_id=" + ClientId, folderPath + @"\" + Util.ValidateString(data["title"].ToString()) + ".mp3");
+            }
+            catch (Exception e)
+            {
+                
+            }
         }
 
         public static JArray GetFavorites(int userId)
@@ -53,6 +69,16 @@ namespace SoundCloudDownloader.lib
                 GetJsonArray("http://api.soundcloud.com/users/" + userId + "/favorites/?client_id=" + ClientId + "&limit=200");
 
             return data;
+        }
+
+        public static JArray GetPlaylist(string url)
+        {
+            JObject data =
+                GetJson("http://api.soundcloud.com/resolve.json?url=" + url + "&client_id=" + ClientId);
+
+            JArray t = JArray.Parse(data["tracks"].ToString());
+
+            return t;
         }
 
         public static JArray GetFavoritesOffset(int offset, int userId)
@@ -106,6 +132,36 @@ namespace SoundCloudDownloader.lib
                 }
             }
             return _soundList;
+        }
+
+        public static List<SoundDownloader> GetDownloadList(JArray soundArray)
+        {
+            List<SoundDownloader> soundList = new List<SoundDownloader>();
+            foreach (JObject j in soundArray)
+                {
+                    TrackInformation trackInfo = null;
+                    if (j["user"]["username"] != null && j["title"] != null && j["duration"] != null)
+                    {
+                        double duration = Math.Round(double.Parse(j["duration"].ToString()) / 1000/60, 2);
+                        trackInfo = new TrackInformation(j["user"]["username"].ToString(), j["title"].ToString(), duration);
+                    }
+
+                    if (j["stream_url"] == null )
+                    {
+                        if (j["id"] == null)
+                            continue;
+
+                        
+                        soundList.Add(new SoundDownloader("https://api.soundcloud.com/tracks/" + j["id"].ToString() + "/stream" + "?client_id=" + ClientId, true,
+                            trackInfo));
+                    }
+                    else
+                    {
+                        soundList.Add(new SoundDownloader(j["stream_url"].ToString() + "?client_id=" + ClientId, true, trackInfo));
+                    }
+                    
+                }
+            return soundList;
         }
 
         public static User GetUser(string userName)

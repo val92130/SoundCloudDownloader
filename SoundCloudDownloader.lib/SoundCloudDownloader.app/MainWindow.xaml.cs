@@ -20,6 +20,7 @@ using SoundCloudDownloader.lib;
 using DataGrid = System.Windows.Controls.DataGrid;
 using MessageBox = System.Windows.MessageBox;
 using System.Windows.Controls;
+using Newtonsoft.Json.Linq;
 
 namespace SoundCloudDownloader.app
 {
@@ -40,6 +41,7 @@ namespace SoundCloudDownloader.app
         {
             _dataSaver = new DataSaver();
             InitializeComponent();
+            JArray d = SoundCloud.GetPlaylist("https://soundcloud.com/valentinchatelain/sets/electro");
         }
 
         private void fetchFavoritesButton_Click(object sender, RoutedEventArgs e)
@@ -199,7 +201,7 @@ namespace SoundCloudDownloader.app
         {
             System.Windows.Forms.FolderBrowserDialog saveFileDialog = new System.Windows.Forms.FolderBrowserDialog
             {
-                RootFolder = Environment.SpecialFolder.MyMusic
+                
             };
             DialogResult d = saveFileDialog.ShowDialog();
 
@@ -229,6 +231,12 @@ namespace SoundCloudDownloader.app
         {
             MultipleTrackDownloaderWindow m = new MultipleTrackDownloaderWindow(this);
             m.ShowDialog();
+        }
+
+        private void DownloadPlaylistTracksClick(object sender, RoutedEventArgs e)
+        {
+            PlaylistDownloaderWindow p = new PlaylistDownloaderWindow(this);
+            p.ShowDialog();
         }
     }
 }
